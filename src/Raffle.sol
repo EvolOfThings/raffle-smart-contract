@@ -56,7 +56,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     address payable[] private s_players; //this makes address are payable so that we can send eth to winner
     uint256 private s_lastTimeStamp;
     address private s_recentWinner;
-    RaffleState private s_raffleState;
+    RaffleState private s_raffleState; // start as open
     /* Events */
     event RaffleEntered(address indexed player);
     event WinnerPicked(address indexed winner);
@@ -64,11 +64,11 @@ contract Raffle is VRFConsumerBaseV2Plus {
     constructor(
         uint256 entranceFee,
         uint256 interval,
-        address vrfCoordinatorV2,
+        address vrfCoordinator,
         bytes32 gasLane,
         uint256 subscriptionId,
         uint32 callbackGasLimit
-    ) VRFConsumerBaseV2Plus(vrfCoordinatorV2) {
+    ) VRFConsumerBaseV2Plus(vrfCoordinator) {
         i_entranceFee = entranceFee;
         i_interval = interval;
         i_keyHash = gasLane;
@@ -86,7 +86,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
             revert Raffle__SendMoreToEnterRaffle();
         }
         if (s_raffleState != RaffleState.OPEN) {
-            revert();
+            revert Raffle__RaffleNotOpen();
         }
         s_players.push(payable(msg.sender));
         // what is the current block timestamp
@@ -179,5 +179,14 @@ contract Raffle is VRFConsumerBaseV2Plus {
      */
     function getEntranceFee() external view returns (uint256) {
         return i_entranceFee;
+    }
+
+    function getRaffleState() external view returns (RaffleState) {
+        return s_raffleState;
+    }
+
+    function getPlayer(uint256 indexOfPlayer) external view returns 
+    (address) {
+        return s_players[indexOfPlayer];
     }
 }
